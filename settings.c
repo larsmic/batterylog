@@ -18,7 +18,7 @@
 
 struct settingsStruct settings =
 {
-	"/var/tmp/batterylogger.log",	//filepath for logfile to read from
+	"/var/log/batterylogger.log",	//filepath for logfile to read from
 	'#',						//line char
 	'#',						//line char interpolated
 	'#',						//pillar char
