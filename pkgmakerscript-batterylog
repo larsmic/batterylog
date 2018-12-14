@@ -4,9 +4,7 @@
 # packagemakerscript for batterylog #
 #####################################
 
-echo -n "Version number: "
-read VER
-
+VER="0.2"
 PROGNAME="batterylog"
 files=( "main.c" "settings.c" "ui.c" "header.h" "makefile" "batterylog.conf" )
 
