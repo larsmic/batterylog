@@ -1,0 +1,35 @@
+#!/bin/bash
+
+#####################################
+# packagemakerscript for batterylog #
+#####################################
+
+echo -n "Version number: "
+read VER
+
+PROGNAME="batterylog"
+files=( "main.c" "settings.c" "ui.c" "header.h" "makefile" "batterylog.conf" )
+
+# delete old folder (if present) and make a new folder for tar
+rm -r ./$PROGNAME-$VER
+mkdir -p ./$PROGNAME-$VER
+
+# copy needed files to folder
+for i in "${files[@]}"
+do
+	cp ./$i ./$PROGNAME-$VER/$i
+done
+
+# make tarball from folder
+tar -czf $PROGNAME-$VER.tar.gz ./$PROGNAME-$VER
+
+# remove folder
+rm -r ./$PROGNAME-$VER
+
+# calculate hash from tarball
+hash=`sha256sum ./$PROGNAME-$VER.tar.gz | cut -d ' ' -f1`
+
+#echo hash for copying
+echo $hash
+
+exit 0
