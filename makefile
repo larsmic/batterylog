@@ -15,4 +15,4 @@ install:
 	mkdir -p $(DESTDIR)usr/bin/
 	cp ./batterylog $(DESTDIR)usr/bin/batterylog
 	mkdir -p $(DESTDIR)etc/
-	cp .7batterylog.conf $(DESTDIR)etc/batterylog.conf
+	cp ./batterylog.conf $(DESTDIR)etc/batterylog.conf
