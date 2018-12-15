@@ -28,6 +28,7 @@ struct logEntry
 	unsigned char percentage;
 	time_t time;					//output format %li
 	unsigned char interpolatedFlag;
+	unsigned char empty;
 };
 
 struct settingsStruct

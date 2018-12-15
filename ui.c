@@ -21,7 +21,7 @@ int printLine(int parTerminalColumns, const struct logEntry parStruct[], int par
 
 	for(int i = 0; i < parTerminalColumns; i++)
 	{
-		if(parInterpolationFlag == 1 && i >= leftOffset && parStruct[i].interpolatedFlag == 1)
+		if(parInterpolationFlag == 1 && i >= leftOffset && parStruct[i-leftOffset].interpolatedFlag == 1)
 		{
 			printf("%s%c%s", ANSI_COLOR_RED, settings.graphUnderlineCharInterpolated, ANSI_COLOR_RESET);
 		}
@@ -92,7 +92,7 @@ int printTable(struct logEntry parStruct[], int parStructLenght, int parTerminal
 	int minValue;
 	int rvint = 0;
 
-	//loop for Lines
+	//loop for  the lines
 	for(int i = 0; i < 20; i++)
 	{
 		minValue = 100-i*5;
@@ -106,27 +106,34 @@ int printTable(struct logEntry parStruct[], int parStructLenght, int parTerminal
 			printLeftOffset(parTerminalColumns-parStructLenght);
 		}
 
-		//loop for Columns
+		//loop for the columns
 		for(int j = 0; j < parStructLenght; j++)
 		{
-			if(parStruct[j].percentage >= minValue && parStruct[j].percentage < 100-(i-1)*5 )
+			if(parStruct[j].empty == 1)
 			{
-				if(parStruct[j].interpolatedFlag == 0)
-				{
-					printf("%c", settings.graphLineCharData);
-				}
-				else
-				{
-					printf("%c", settings.graphLineCharInterpolated);
-				}
-			}
-			else if(parStruct[j].percentage > minValue && j%6 == 0)
-			{
-				printf("%c", settings.graphPillarChar);
+				printf(" ");
 			}
 			else
 			{
-				printf(" ");
+				if((parStruct[j].percentage >= minValue) && (parStruct[j].percentage < 100-(i-1)*5))
+				{
+					if(parStruct[j].interpolatedFlag == 0)
+					{
+						printf("%c", settings.graphLineCharData);
+					}
+					else
+					{
+						printf("%c", settings.graphLineCharInterpolated);
+					}
+				}
+				else if(parStruct[j].percentage > minValue && j%6 == 0)
+				{
+					printf("%c", settings.graphPillarChar);
+				}
+				else
+				{
+					printf(" ");
+				}
 			}
 		}
 		printf("\n");

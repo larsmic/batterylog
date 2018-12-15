@@ -55,7 +55,7 @@ int copyLogfileToArray(char parArray[][LOGFILE_ENTRY_LENGHT], int const parArray
 	if(logfilePointer == NULL)
 	{
 		perror("Error opening Logfile");
-		return 1;
+		exit(1);
 	}
 	char readString[LOGFILE_ENTRY_LENGHT];
 	char bufferArray[parArraySize][LOGFILE_ENTRY_LENGHT];
@@ -81,10 +81,25 @@ int copyLogfileToArray(char parArray[][LOGFILE_ENTRY_LENGHT], int const parArray
 	// Sort the bufferArray and save it to the givin Array
 	if( lastArrayEntry >= parArraySize )
 	{
-		for(int i = 0; i < parArraySize ; i++)	//SAVE: i+(lastArrayEntry-parArraySize) <= lastArrayEntry
+		for(int i = 0; i < parArraySize ; i++)
 		{
 			strcpy(parArray[i], bufferArray[(i+(lastArrayEntry-parArraySize)+1)%parArraySize]);
 			if(settings.debugMode == 2) printf("parArray[%i] = bufferArray[%i] = \"%s\"\n", i, (i+lastArrayEntry-parArraySize+1)%parArraySize, parArray[i]);
+		}
+	}
+	else
+	{
+		//fill the dataless entries
+		for(int i = 0; i < parArraySize-lastArrayEntry-1; i++)
+		{
+			strcpy(parArray[i],"\0");
+			if(settings.debugMode == 2) printf("parArray[%i] = \"%s\"\n", i, parArray[i]);
+		}
+		//copy the data in the rest
+		for(int i = parArraySize-lastArrayEntry-1, j = 0; i < parArraySize; i++, j++)
+		{
+			strcpy(parArray[i], bufferArray[j]);
+			if(settings.debugMode == 2) printf("parArray[%i] = bufferArray[%i] = \"%s\"\n", i, j, parArray[i]);
 		}
 	}
 
@@ -107,73 +122,83 @@ int logfileArrayToStruct(struct logEntry parStruct[], char parArray[][LOGFILE_EN
 	{
 		char bufferString[5];
 
-		// [YYYY-MM-DD-HH-MM] p or pp or ppp
-
-		//copy year
-		bufferString[0] = parArray[i][1];
-		bufferString[1] = parArray[i][2];
-		bufferString[2] = parArray[i][3];
-		bufferString[3] = parArray[i][4];
-		bufferString[4] = '\0';
-		parStruct[i].year = (short)atoi(bufferString);
-
-		//copy month
-		bufferString[0] = parArray[i][6];
-		bufferString[1] = parArray[i][7];
-		bufferString[2] = '\0';
-		parStruct[i].month = (unsigned char)atoi(bufferString);
-
-		//copy day
-		bufferString[0] = parArray[i][9];
-		bufferString[1] = parArray[i][10];
-		bufferString[2] = '\0';
-		parStruct[i].day = (unsigned char)atoi(bufferString);
-
-		//copy hour
-		bufferString[0] = parArray[i][12];
-		bufferString[1] = parArray[i][13];
-		bufferString[2] = '\0';
-		parStruct[i].hour = (unsigned char)atoi(bufferString);
-
-		//copy minutes
-		bufferString[0] = parArray[i][15];
-		bufferString[1] = parArray[i][16];
-		bufferString[2] = '\0';
-		parStruct[i].minutes = (unsigned char)atoi(bufferString);
-
-		//copy percentage
-		if(parArray[i][20] == '\0')
+		if(parArray[i][0] == '\0')
 		{
-			bufferString[0] = parArray[i][19];
-			bufferString[1] = '\0';
-			parStruct[i].percentage = (unsigned char)atoi(bufferString);
-			if(settings.debugMode == 2) printf("parArray[%i][20] == '\0' percentage=%hhi\n", i, parStruct[i].percentage);
-		}
-		else if(parArray[i][21] == '\0')
-		{
-			bufferString[0] = parArray[i][19];
-			bufferString[1] = parArray[i][20];
-			bufferString[2] = '\0';
-			parStruct[i].percentage = (unsigned char)atoi(bufferString);
-			if(settings.debugMode == 2) printf("parArray[%i][21] == \\0 percentage=%hhi\n", i, parStruct[i].percentage);
-		}
-		else if(parArray[i][22] == '\0')
-		{
-			bufferString[0] = parArray[i][19];
-			bufferString[1] = parArray[i][20];
-			bufferString[2] = parArray[i][21];
-			bufferString[3] = '\0';
-			parStruct[i].percentage = (unsigned char)atoi(bufferString);
-			if(settings.debugMode == 2) printf("parArray[%i][22] == \\0 percentage=%hhi\n", i, parStruct[i].percentage);
+			//mark this element as empty, that the ui doesnt attempt to draw something
+			parStruct[i].empty = 1;
 		}
 		else
 		{
-			parStruct[i].percentage = 0;
-			if(settings.debugMode >= 1) printf("parArray[%i][20/21/22] = \\0 not found percentage=%hhi\n", parStruct[i].percentage);
-		}
+			parStruct[i].empty = 0;
 
-		//set InterpolatedFlag to 0
-		parStruct[i].interpolatedFlag = (unsigned char)0;
+			// [YYYY-MM-DD-HH-MM] p or pp or ppp
+
+			//copy year
+			bufferString[0] = parArray[i][1];
+			bufferString[1] = parArray[i][2];
+			bufferString[2] = parArray[i][3];
+			bufferString[3] = parArray[i][4];
+			bufferString[4] = '\0';
+			parStruct[i].year = (short)atoi(bufferString);
+
+			//copy month
+			bufferString[0] = parArray[i][6];
+			bufferString[1] = parArray[i][7];
+			bufferString[2] = '\0';
+			parStruct[i].month = (unsigned char)atoi(bufferString);
+
+			//copy day
+			bufferString[0] = parArray[i][9];
+			bufferString[1] = parArray[i][10];
+			bufferString[2] = '\0';
+			parStruct[i].day = (unsigned char)atoi(bufferString);
+
+			//copy hour
+			bufferString[0] = parArray[i][12];
+			bufferString[1] = parArray[i][13];
+			bufferString[2] = '\0';
+			parStruct[i].hour = (unsigned char)atoi(bufferString);
+
+			//copy minutes
+			bufferString[0] = parArray[i][15];
+			bufferString[1] = parArray[i][16];
+			bufferString[2] = '\0';
+			parStruct[i].minutes = (unsigned char)atoi(bufferString);
+
+			//copy percentage
+			if(parArray[i][20] == '\0')
+			{
+				bufferString[0] = parArray[i][19];
+				bufferString[1] = '\0';
+				parStruct[i].percentage = (unsigned char)atoi(bufferString);
+				if(settings.debugMode == 2) printf("parArray[%i][20] == \\0 percentage=%hhi\n", i, parStruct[i].percentage);
+			}
+			else if(parArray[i][21] == '\0')
+			{
+				bufferString[0] = parArray[i][19];
+				bufferString[1] = parArray[i][20];
+				bufferString[2] = '\0';
+				parStruct[i].percentage = (unsigned char)atoi(bufferString);
+				if(settings.debugMode == 2) printf("parArray[%i][21] == \\0 percentage=%hhi\n", i, parStruct[i].percentage);
+			}
+			else if(parArray[i][22] == '\0')
+			{
+				bufferString[0] = parArray[i][19];
+				bufferString[1] = parArray[i][20];
+				bufferString[2] = parArray[i][21];
+				bufferString[3] = '\0';
+				parStruct[i].percentage = (unsigned char)atoi(bufferString);
+				if(settings.debugMode == 2) printf("parArray[%i][22] == \\0 percentage=%hhi\n", i, parStruct[i].percentage);
+			}
+			else
+			{
+				parStruct[i].percentage = 0;
+				if(settings.debugMode >= 1) printf("parArray[%i][20/21/22] = \\0 not found percentage=%hhi\n", i, parStruct[i].percentage);
+			}
+
+			//set InterpolatedFlag to 0
+			parStruct[i].interpolatedFlag = (unsigned char)0;
+		}
 
 	}
 
@@ -236,13 +261,15 @@ int generateTimeAccurateStruct(struct logEntry parTimeAccurateStruct[], struct l
 			{
 				//Interpolate the values between logentries
 				//y=m*x+b	m=y2-y1/x2-x1 = y2-y1/neededActions
-				//m=(parInputStruct[inputi].percentage - parInputStruct[inputi+1].percentage)/neededAdditions		b=parInputStruct[inputi].percentage
-				//m=percentage(n+1)-percentage(n)/neededAdditions
+
+				//calculate m
 				interpolationm = ((double)(parInputStruct[inputi+1].percentage - parInputStruct[inputi].percentage)/(double)neededAdditions);
 				if(settings.debugMode==2) printf("m=(%i - %i) / %i = %f\n", (int)parInputStruct[inputi+1].percentage, (int)parInputStruct[inputi].percentage, neededAdditions, interpolationm);
 
+				//calculate y (the interpolated percentage)
 				parTimeAccurateStruct[outputi].percentage = (unsigned char)(interpolationm * i + (double)parInputStruct[inputi].percentage);
 				if(settings.debugMode==2) printf("p=%hhu = %f * %i + %i\n", parTimeAccurateStruct[outputi].percentage, interpolationm, i, (int)parInputStruct[inputi].percentage);
+
 
 				//Interpolate the timestamps
 				parTimeAccurateStruct[outputi].time = parInputStruct[inputi].time + i*(timediff/neededAdditions);
@@ -255,6 +282,9 @@ int generateTimeAccurateStruct(struct logEntry parTimeAccurateStruct[], struct l
 
 				//set interpolation flag
 				parTimeAccurateStruct[outputi].interpolatedFlag = 1;
+
+				//take the empty flag with you
+				parTimeAccurateStruct[outputi].empty = parInputStruct[inputi].empty;
 
 
 				if(settings.debugMode == 2) printf("==> accStruct[%i] = inputStruct[%i] = %hhu (interpolated)\n", outputi, inputi, parTimeAccurateStruct[outputi].percentage);
