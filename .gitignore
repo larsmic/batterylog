@@ -1,0 +1,4 @@
+*.o
+PKGBUILD
+pkgmakerscript-batterylog
+batterylog
