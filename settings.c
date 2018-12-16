@@ -27,13 +27,13 @@ struct settingsStruct settings =
 	0,							//xAxis description
 	1,							//graph mode
 	0,							//debug mode
-	"BAT0 wacom_battery_0"		//batteries to display graph for
+	"BAT0"		//batteries to display graph for
 };
 
 
 int updateSettingsValue(char *parName, char *parValue)
 {
-	if(strcmp(parName, "battery_percentage_logfile_path") == 0)
+	if(strcmp(parName, "input_logfile_path") == 0)
 	{
 		strcpy(settings.inputLogfilePath, parValue);
 	}

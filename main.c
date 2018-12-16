@@ -323,8 +323,10 @@ int fillBatteriesArray(char array[MAX_BATTERIES][MAX_BATTERY_NAME_LENGTH], char 
 	for(i = 0; rvcharp != NULL && i < MAX_BATTERIES; i++)
 	{
 		strcpy(array[i], rvcharp);
+		if(settings.debugMode >= 1) printf("Battery %i = \"%s\"\n", i, array[i]);
 		rvcharp = strtok(NULL, " ");
 	}
+	if(settings.debugMode >= 1) printf("%i batteries specified\n", i);
 
 	return i;	//the amount of batteries specified in the configfile string
 }
@@ -350,9 +352,6 @@ int main(int argc, char **argv)
 	int amountOfBatteries = 0;
 	char logfilePath[MAX_FILEPATH_STRING_LENGTH] = "";
 
-	//fill array with names of batteries
-	amountOfBatteries = fillBatteriesArray(batteries, settings.batteriesToLog);
-
 	//load config before argument check to override configfile values by arguments
 	readSettingsFromConfigFile();
 
@@ -375,11 +374,19 @@ int main(int argc, char **argv)
 			}
 			if(strcmp(argv[i], "--help") == 0)
 			{
-				printf("Usage: batterylog [OPTIONS]\n\n  -o        Output the logfile without interpolating\n  -d        debugging mode\n  -v        Verbose debugging mode\n  --help    Display this help message\n");
+				printf("Usage: batterylog [OPTIONS]\n  -o        Output the logfile without interpolating\n  -d        debugging mode\n  -v        Verbose debugging mode\n  --help    Display this help message\n\n");
+				printf("Style explanation:\n");
+				printf("  %c = Value above is raw logged data\n", settings.graphUnderlineCharData);
+				printf("  %s%c%s = Value above was interpolated between log entries\n", ANSI_COLOR_RED, settings.graphUnderlineCharInterpolated, ANSI_COLOR_RESET);
+				printf("  %sx%s = No value can be displayed for this point in time\n", ANSI_COLOR_RED, ANSI_COLOR_RESET);
 				exit(0);
 			}
 		}
 	}
+
+	//fill array with names of batteries
+	amountOfBatteries = fillBatteriesArray(batteries, settings.batteriesToLog);
+
 
 	if(settings.debugMode == 2)
 	{
