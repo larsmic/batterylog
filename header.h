@@ -1,14 +1,9 @@
-
-/*
- *
- *	header.h
- *
- */
+//header.h
 
 /* DEFINES */
 #define SIZEOF_ARRAY(a) (sizeof(a) / sizeof(a[0] ))
-#define LOGFILE_ENTRY_LENGHT 30
-#define CHART_CHAR '#'
+
+#define LOGFILE_ENTRY_LENGTH 30
 #define ANSI_COLOR_RED     "\x1b[31m"
 #define ANSI_COLOR_GREEN   "\x1b[32m"
 #define ANSI_COLOR_YELLOW  "\x1b[33m"
@@ -16,6 +11,11 @@
 #define ANSI_COLOR_MAGENTA "\x1b[35m"
 #define ANSI_COLOR_CYAN    "\x1b[36m"
 #define ANSI_COLOR_RESET   "\x1b[0m"
+
+#define MAX_FILEPATH_STRING_LENGTH 4097
+
+#define MAX_BATTERIES 10
+#define MAX_BATTERY_NAME_LENGTH 100
 
 /* GLOBALS */
 struct logEntry
@@ -41,9 +41,9 @@ struct settingsStruct
 	* If you add an option to the settings struct, also include suppurt for it in:
 	* - the updateSettingsValue function (if config file suppurt is logical)
 	* - the global definition of default values
-	* If config file support is not logical, please note it as comment at the definition of the variable.
+	* If config file support is not logical, note it as comment at the definition of the variable.
 	*/
-	char batteryPercentagelogfilePath[4097];	//maximal characters allowed for filepaths in ext4, plus one for \0
+	char inputLogfilePath[4097];	//maximal characters allowed for filepaths in ext4, plus one for \0
 	char graphLineCharData;
 	char graphLineCharInterpolated;
 	char graphPillarChar;
@@ -52,6 +52,7 @@ struct settingsStruct
 	int xAxisDescriptionMode;	//0=HH:MM	1=time difference to current time	TODO:implement 1
 	int graphMode;	//0=just display logentries    1=time accurate mode, which interpolated missing entries
 	int debugMode;	//0=no debug displayed	1=normal amount debug	2=verbose debug
+	char batteriesToLog[MAX_BATTERIES * MAX_BATTERY_NAME_LENGTH + MAX_BATTERIES-1 + 1]; //batteries to display a graph for
 };
 
 extern struct settingsStruct settings;
@@ -73,20 +74,25 @@ int printTable(struct logEntry parStruct[], int parStructLenght, int parTerminal
 int printLogStruct(const struct logEntry *ptr);
 
 
+
 //settings.c
 int updateSettingsValue(char *parName, char *parValue);
 
 int readSettingsFromConfigFile(void);
 
 
+
 //main.c
 char *removeEndingNewline(char *string_pointer);
 
-int copyLogfileToArray(char parArray[][LOGFILE_ENTRY_LENGHT], int const parArraySize);
+int copyLogfileToArray(char parArray[][LOGFILE_ENTRY_LENGTH], int const parArraySize, const char filepath[MAX_FILEPATH_STRING_LENGTH]);
 
 int getTerminalColumns(void);
 
-int logfileArrayToStruct(struct logEntry parStruct[], char parArray[][LOGFILE_ENTRY_LENGHT], int parLenght);
+int logfileArrayToStruct(struct logEntry parStruct[], char parArray[][LOGFILE_ENTRY_LENGTH], int parLenght);
 
 int generateTimeAccurateStruct(struct logEntry parTimeAccurateStruct[], struct logEntry parInputStruct[], const int parStructSize);
 
+int fillBatteriesArray(char array[MAX_BATTERIES][MAX_BATTERY_NAME_LENGTH], char *batteriesString);
+
+int generateLogfilePathFromBatteryname(char *filepath, const char *batteryname);

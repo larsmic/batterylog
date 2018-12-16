@@ -49,16 +49,16 @@ char *removeEndingNewline(char *string_pointer) // changes newline characters to
 	return string_pointer;
 }
 
-int copyLogfileToArray(char parArray[][LOGFILE_ENTRY_LENGHT], int const parArraySize)
+int copyLogfileToArray(char parArray[][LOGFILE_ENTRY_LENGTH], int const parArraySize, const char filepath[MAX_FILEPATH_STRING_LENGTH])
 {
-	FILE *logfilePointer = fopen(settings.batteryPercentagelogfilePath, "r");
+	FILE *logfilePointer = fopen(filepath, "r");
 	if(logfilePointer == NULL)
 	{
 		perror("Error opening Logfile");
 		exit(1);
 	}
-	char readString[LOGFILE_ENTRY_LENGHT];
-	char bufferArray[parArraySize][LOGFILE_ENTRY_LENGHT];
+	char readString[LOGFILE_ENTRY_LENGTH];
+	char bufferArray[parArraySize][LOGFILE_ENTRY_LENGTH];
 	int line = 0;
 	int lastArrayEntry = 0;
 	char* rvcharptr;
@@ -116,7 +116,7 @@ int getTerminalColumns()
 }
 
 
-int logfileArrayToStruct(struct logEntry parStruct[], char parArray[][LOGFILE_ENTRY_LENGHT], int parLenght)
+int logfileArrayToStruct(struct logEntry parStruct[], char parArray[][LOGFILE_ENTRY_LENGTH], int parLenght)
 {
 	for(int i = 0; i < parLenght; i++)
 	{
@@ -311,14 +311,46 @@ int generateTimeAccurateStruct(struct logEntry parTimeAccurateStruct[], struct l
 }
 
 
+int fillBatteriesArray(char array[MAX_BATTERIES][MAX_BATTERY_NAME_LENGTH], char *batteriesString)
+{
+	char *rvcharp = NULL;
+	char buffer[SIZEOF_ARRAY(settings.batteriesToLog)];
+	int i;
 
+	strcpy(buffer, batteriesString);
+
+	rvcharp = strtok(buffer, " ");
+	for(i = 0; rvcharp != NULL && i < MAX_BATTERIES; i++)
+	{
+		strcpy(array[i], rvcharp);
+		if(settings.debugMode >= 1) printf("Battery %i = \"%s\"\n", i, array[i]);
+		rvcharp = strtok(NULL, " ");
+	}
+	if(settings.debugMode >= 1) printf("%i batteries specified\n", i);
+
+	return i;	//the amount of batteries specified in the configfile string
+}
+
+
+int generateLogfilePathFromBatteryname(char *filepath, const char *batteryname)
+{
+	strcpy(filepath, settings.inputLogfilePath);
+	strcat(filepath, "batterylog-");
+	strcat(filepath, batteryname);
+	strcat(filepath, ".log");
+
+	return 0;
+}
 
 int main(int argc, char **argv)
 {
 	int terminalColumns = getTerminalColumns();
 	int tableColumns = terminalColumns - 4;
-	char logEntryArray[tableColumns][LOGFILE_ENTRY_LENGHT];
+	char logEntryArray[tableColumns][LOGFILE_ENTRY_LENGTH];
 	struct logEntry logEntries[tableColumns];
+	char batteries[MAX_BATTERIES][MAX_BATTERY_NAME_LENGTH];
+	int amountOfBatteries = 0;
+	char logfilePath[MAX_FILEPATH_STRING_LENGTH] = "";
 
 	//load config before argument check to override configfile values by arguments
 	readSettingsFromConfigFile();
@@ -342,55 +374,75 @@ int main(int argc, char **argv)
 			}
 			if(strcmp(argv[i], "--help") == 0)
 			{
-				printf("Usage: batterylog [OPTIONS]\n\n  -o        Output the logfile without interpolating\n  -d        debugging mode\n  -v        Verbose debugging mode\n  --help    Display this help message\n");
+				printf("Usage: batterylog [OPTIONS]\n  -o        Output the logfile without interpolating\n  -d        debugging mode\n  -v        Verbose debugging mode\n  --help    Display this help message\n\n");
+				printf("Style explanation:\n");
+				printf("  %c = Value above is raw logged data\n", settings.graphUnderlineCharData);
+				printf("  %s%c%s = Value above was interpolated between log entries\n", ANSI_COLOR_RED, settings.graphUnderlineCharInterpolated, ANSI_COLOR_RESET);
+				printf("  %sx%s = No value can be displayed for this point in time\n", ANSI_COLOR_RED, ANSI_COLOR_RESET);
 				exit(0);
 			}
 		}
 	}
+
+	//fill array with names of batteries
+	amountOfBatteries = fillBatteriesArray(batteries, settings.batteriesToLog);
+
 
 	if(settings.debugMode == 2)
 	{
 		printf("columns %d\n", terminalColumns);
 		printf("tableColumns = %i\n", tableColumns);
 		printf("SIZEOF_ARRAY(logEntryArray) = %i\n", SIZEOF_ARRAY(logEntryArray));
+		printf("%i batteries specified to output graph for\n", amountOfBatteries);
 	}
 
 
-
-	//file -> array
-	copyLogfileToArray(logEntryArray, tableColumns);
-
-	if(settings.debugMode == 2)
+	for(int i = 0; i < amountOfBatteries; i++)
 	{
-		for(int i = 0; i < tableColumns; i++)
-		{
-			printf("A[%i] = \"%s\"\n", i, logEntryArray[i]);
-		}
-	}
+		generateLogfilePathFromBatteryname(logfilePath, batteries[i]);
 
-	//array -> struct
-	logfileArrayToStruct(logEntries, logEntryArray, tableColumns);
+		//file -> array
+		copyLogfileToArray(logEntryArray, tableColumns, logfilePath);
 
-	//convert to interpolated version for graphMode=1
-	if(settings.graphMode == 1)
-	{
-		struct logEntry timeAccStruct[tableColumns];
-
-		generateTimeAccurateStruct(timeAccStruct, logEntries, tableColumns);
-
-		memcpy(&logEntries, &timeAccStruct, sizeof(logEntries));
-
-		if(settings.debugMode >= 1)
+		if(settings.debugMode == 2)
 		{
 			for(int i = 0; i < tableColumns; i++)
 			{
-				printf("Struct[%i] = %hi-%hhu-%hhu-%hhu-%hhu: %hhu\n", i, logEntries[i].year, logEntries[i].month, logEntries[i].day, logEntries[i].hour, logEntries[i].minutes, logEntries[i].percentage);
+				printf("A[%i] = \"%s\"\n", i, logEntryArray[i]);
 			}
 		}
+
+		//array -> struct
+		logfileArrayToStruct(logEntries, logEntryArray, tableColumns);
+
+		//convert to interpolated version for graphMode=1
+		if(settings.graphMode == 1)
+		{
+			struct logEntry timeAccStruct[tableColumns];
+
+			generateTimeAccurateStruct(timeAccStruct, logEntries, tableColumns);
+
+			memcpy(&logEntries, &timeAccStruct, sizeof(logEntries));
+
+			if(settings.debugMode >= 1)
+			{
+				for(int i = 0; i < tableColumns; i++)
+				{
+					printf("Struct[%03i] = %4hi-%2hhu-%2hhu-%2hhu-%2hhu: %3hhu ", i, logEntries[i].year, logEntries[i].month, logEntries[i].day, logEntries[i].hour, logEntries[i].minutes, logEntries[i].percentage);
+					printf(" %s%s\n", (logEntries[i].interpolatedFlag == 1)?"i":" ", (logEntries[i].empty == 1)?"e":" ");
+				}
+			}
+		}
+
+		//draw UI
+		printf("\n");
+		printLeftOffset( 4+(terminalColumns-strlen(batteries[i]))/2 );
+		printf("%s:\n", batteries[i]);
+
+		printTable(logEntries, tableColumns, terminalColumns);
 	}
 
-	//draw UI
-	printTable(logEntries, tableColumns, terminalColumns);
+
 
 	return 0;
 }

@@ -21,7 +21,11 @@ int printLine(int parTerminalColumns, const struct logEntry parStruct[], int par
 
 	for(int i = 0; i < parTerminalColumns; i++)
 	{
-		if(parInterpolationFlag == 1 && i >= leftOffset && parStruct[i-leftOffset].interpolatedFlag == 1)
+		if(parStruct[i-leftOffset].empty == 1)
+		{
+			printf("%sx%s", ANSI_COLOR_RED, ANSI_COLOR_RESET);
+		}
+		else if(parInterpolationFlag == 1 && i >= leftOffset && parStruct[i-leftOffset].interpolatedFlag == 1)
 		{
 			printf("%s%c%s", ANSI_COLOR_RED, settings.graphUnderlineCharInterpolated, ANSI_COLOR_RESET);
 		}
@@ -145,7 +149,14 @@ int printTable(struct logEntry parStruct[], int parStructLenght, int parTerminal
 	printLeftOffset(4);
 	for(int i = 0; i < parStructLenght/6; i++)
 	{
-			rvint = printf("%02hhu:%02hhu ", parStruct[i*6].hour, parStruct[i*6].minutes);
+		if(parStruct[i*6].empty == 0)
+		{
+			printf("%02hhu:%02hhu ", parStruct[i*6].hour, parStruct[i*6].minutes);
+		}
+		else
+		{
+			printLeftOffset(6);
+		}
 	}
 	printf("\n");
 

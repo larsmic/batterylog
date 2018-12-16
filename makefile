@@ -1,6 +1,5 @@
 SHELL = /bin/sh
 
-
 batterylog: main.o ui.o settings.o
 	gcc -o batterylog $^
 

@@ -15,10 +15,10 @@
 
 #include "header.h"
 
-
+// initialisiation with default values
 struct settingsStruct settings =
 {
-	"/var/log/batterylogger.log",	//filepath for logfile to read from
+	"/var/log/",				//filepath for input logfiles
 	'#',						//line char
 	'#',						//line char interpolated
 	'#',						//pillar char
@@ -26,15 +26,16 @@ struct settingsStruct settings =
 	'-',						//underline char interpolated
 	0,							//xAxis description
 	1,							//graph mode
-	0							//debug mode
+	0,							//debug mode
+	"BAT0"		//batteries to display graph for
 };
 
 
 int updateSettingsValue(char *parName, char *parValue)
 {
-	if(strcmp(parName, "battery_percentage_logfile_path") == 0)
+	if(strcmp(parName, "input_logfile_path") == 0)
 	{
-		strcpy(settings.batteryPercentagelogfilePath, parValue);
+		strcpy(settings.inputLogfilePath, parValue);
 	}
 	else if(strcmp(parName, "graph_line_char_data") == 0)
 	{
@@ -63,6 +64,10 @@ int updateSettingsValue(char *parName, char *parValue)
 	else if(strcmp(parName, "graph_mode") == 0)
 	{
 		settings.graphMode = atoi(parValue);
+	}
+	else if(strcmp(parName, "batteries") == 0)
+	{
+		strcpy(settings.batteriesToLog, parValue);
 	}
 	else
 	{
