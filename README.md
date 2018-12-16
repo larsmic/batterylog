@@ -1,2 +1,2 @@
 # batterylog
-Graphical viewer of the battery percentage logged by batteryloggerd for the terminal.
+Terminal utility which displays a graph of the battery percentage logged by batteryloggerd.
