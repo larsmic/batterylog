@@ -1,6 +1,6 @@
 # Maintainer: Lars Michaelis <lars@lars-michaelis.de>
 pkgname=batterylog
-pkgver=0.1
+pkgver=0.2
 pkgrel=1
 epoch=
 pkgdesc="Displays battery percentage over time in a graph"
