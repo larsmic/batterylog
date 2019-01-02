@@ -13,7 +13,7 @@
 #include <syslog.h>
 #include <ctype.h>
 
-#include "header.h"
+#include "defines.h"
 
 // initialisiation with default values
 struct settingsStruct settings =
@@ -35,7 +35,7 @@ int updateSettingsValue(char *parName, char *parValue)
 {
 	if(strcmp(parName, "batterylogs_path") == 0)
 	{
-		strcpy(settings.inputLogfilePath, parValue);
+		strcpy(settings.batterylogsPath, parValue);
 	}
 	else if(strcmp(parName, "graph_line_char_data") == 0)
 	{

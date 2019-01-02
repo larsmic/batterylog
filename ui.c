@@ -12,7 +12,8 @@
 #include <syslog.h>
 #include <ctype.h>
 
-#include "header.h"
+#include "defines.h"
+#include "settings.h"
 
 
 int printLine(int parTerminalColumns, const struct logEntry parStruct[], int parStructSize, int parInterpolationFlag)

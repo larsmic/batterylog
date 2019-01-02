@@ -1,4 +1,5 @@
 *.o
 PKGBUILD
-pkgmakerscript-batterylog
+pkgmakerscript
 batterylog
+batteryloggerd

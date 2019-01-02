@@ -1,26 +1,4 @@
-/*
- * main.c
- *
- * Copyright 2018  <>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
- * MA 02110-1301, USA.
- *
- *
- */
-
+//main.c
 
 #include <stdio.h>
 #include <sys/ioctl.h>
@@ -31,7 +9,9 @@
 #include <syslog.h>
 #include <ctype.h>
 
-#include "header.h"
+#include "defines.h"
+#include "settings.h"
+#include "ui.h"
 
 
 
@@ -280,8 +260,11 @@ int generateTimeAccurateStruct(struct logEntry parTimeAccurateStruct[], struct l
 				parTimeAccurateStruct[outputi].hour = (unsigned char)timestructPointer->tm_hour;
 				parTimeAccurateStruct[outputi].minutes = (unsigned char)timestructPointer->tm_min;
 
-				//set interpolation flag
-				parTimeAccurateStruct[outputi].interpolatedFlag = 1;
+				//set interpolation flag, but not for the last one, which is a real value
+				if(i > 0)
+				{
+					parTimeAccurateStruct[outputi].interpolatedFlag = 1;
+				}
 
 				//take the empty flag with you
 				parTimeAccurateStruct[outputi].empty = parInputStruct[inputi].empty;
@@ -334,7 +317,7 @@ int fillBatteriesArray(char array[MAX_BATTERIES][MAX_BATTERY_NAME_LENGTH], char 
 
 int generateLogfilePathFromBatteryname(char *filepath, const char *batteryname)
 {
-	strcpy(filepath, settings.inputLogfilePath);
+	strcpy(filepath, settings.batterylogsPath);
 	strcat(filepath, "batterylog-");
 	strcat(filepath, batteryname);
 	strcat(filepath, ".log");
