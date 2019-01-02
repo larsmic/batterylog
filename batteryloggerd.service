@@ -1,0 +1,11 @@
+[Unit]
+Description=battery percentage logger
+After=multi-user.target
+
+[Service]
+Type=simple
+Restart=always
+ExecStart=/usr/bin/batteryloggerd
+
+[Install]
+WantedBy=multi-user.target
