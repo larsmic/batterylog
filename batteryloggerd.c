@@ -175,6 +175,7 @@ int main(int argc, char **argv)
 	int currentMinutes = 0;
 	char batteries[MAX_BATTERIES][MAX_BATTERY_NAME_LENGTH];
 	int amountOfBatteries = 0;
+	int onlyOnceFlag = 0;
 	
 	//get settings
 	readSettingsFromConfigFile();	
@@ -189,8 +190,7 @@ int main(int argc, char **argv)
 		{
 			if(strcmp(argv[i], "--now") == 0)
 			{
-				rvint = writeLogEntryForAllBatteries(amountOfBatteries, batteries);
-				exit(rvint);
+				onlyOnceFlag = 1;
 			}
 			else if(strcmp(argv[i], "--help") == 0)
 			{
@@ -200,6 +200,7 @@ int main(int argc, char **argv)
 			else if(strcmp(argv[i], "-d") == 0 || strcmp(argv[i], "--debug") == 0)
 			{
 				settings.debugMode = 1;
+				printf("debug mode enabled");
 			}
 			else
 			{
@@ -208,7 +209,13 @@ int main(int argc, char **argv)
 			}
 		}
 	}
-
+	
+	if(onlyOnceFlag == 1)
+	{
+		rvint = writeLogEntryForAllBatteries(amountOfBatteries, batteries);
+		exit(rvint);
+	}
+	
 	// enter daemon loop
 	while(1)
 	{
