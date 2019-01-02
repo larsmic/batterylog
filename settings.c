@@ -5,7 +5,7 @@
  *
  */
 
- #include <stdio.h>
+#include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
@@ -33,7 +33,7 @@ struct settingsStruct settings =
 
 int updateSettingsValue(char *parName, char *parValue)
 {
-	if(strcmp(parName, "input_logfile_path") == 0)
+	if(strcmp(parName, "batterylogs_path") == 0)
 	{
 		strcpy(settings.inputLogfilePath, parValue);
 	}
